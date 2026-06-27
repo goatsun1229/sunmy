@@ -9,6 +9,7 @@ declare global {
       activeContext: () => Promise<{ app: string; title: string }>;
       saveSecret: (key: string, value: string) => Promise<boolean>;
       loadSecret: (key: string) => Promise<string>;
+      copyText: (text: string) => Promise<boolean>;
       close: () => Promise<void>;
     };
   }

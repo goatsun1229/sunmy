@@ -225,6 +225,11 @@ function App() {
     const lower = raw.toLowerCase();
     if (!raw) return;
 
+    if (/反馈|问题|bug|故障|不好用|建议/.test(lower)) {
+      await copyFeedbackTemplate();
+      return;
+    }
+
     if (lower.includes("打开") || lower.includes("open")) {
       const sites: Record<string, string> = {
         b站: "https://www.bilibili.com",
@@ -329,6 +334,33 @@ function App() {
     showBubble(ok ? "Key 已保存" : "保存失败");
   }
 
+  async function copyFeedbackTemplate() {
+    const platform = await window.pixelpal?.platform().catch(() => null);
+    const context = await window.pixelpal?.activeContext().catch(() => null);
+    const template = [
+      "码伴 PixelPal 内测反馈",
+      "",
+      `系统：${platform?.platform || "未识别"}`,
+      `宠物名：${settings.petName}`,
+      `主人名：${settings.ownerName}`,
+      `缩放：${settings.scale.toFixed(1)}`,
+      `当前状态：${petState}`,
+      `识别到的软件：${context?.app || "无"}`,
+      `识别到的窗口：${context?.title || "无"}`,
+      "",
+      "是否能打开：",
+      "是否能退出：",
+      "遇到的问题：",
+      "复现步骤：",
+      "希望增加：",
+      "截图/录屏：",
+    ].join("\n");
+    const copied = await window.pixelpal?.copyText(template);
+    if (!copied && navigator.clipboard) await navigator.clipboard.writeText(template);
+    setPetState("success");
+    showBubble("反馈模板已复制", true);
+  }
+
   return (
     <main>
       <div
@@ -369,6 +401,7 @@ function App() {
         <button onClick={() => setPetState("watching")}>看视频</button>
         <button onClick={addWalkReminder}>2小时提醒</button>
         <button onClick={() => void setDeepSeekKey()}>{deepSeekReady ? "更新Key" : "设置Key"}</button>
+        <button onClick={() => void copyFeedbackTemplate()}>反馈</button>
         <button onClick={() => setSettings({ ...settings, scale: Math.max(0.8, settings.scale - 0.1) })}>缩小</button>
         <button onClick={() => setSettings({ ...settings, scale: Math.min(1.5, settings.scale + 0.1) })}>放大</button>
         <button onClick={() => void window.pixelpal?.close()}>关闭</button>

@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld("pixelpal", {
   activeContext: () => ipcRenderer.invoke("pixelpal:active-context"),
   saveSecret: (key, value) => ipcRenderer.invoke("pixelpal:save-secret", key, value),
   loadSecret: (key) => ipcRenderer.invoke("pixelpal:load-secret", key),
+  copyText: (text) => ipcRenderer.invoke("pixelpal:copy-text", text),
   close: () => ipcRenderer.invoke("pixelpal:close"),
 });

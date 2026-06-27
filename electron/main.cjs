@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, Tray, ipcMain, nativeImage, safeStorage, shell } = require("electron");
+const { app, BrowserWindow, Menu, Tray, clipboard, ipcMain, nativeImage, safeStorage, shell } = require("electron");
 const path = require("path");
 const os = require("os");
 const fs = require("fs");
@@ -215,6 +215,11 @@ ipcMain.handle("pixelpal:close", () => {
 ipcMain.handle("pixelpal:save-secret", (_event, key, value) => saveSecret(String(key), String(value || "")));
 
 ipcMain.handle("pixelpal:load-secret", (_event, key) => loadSecret(String(key)));
+
+ipcMain.handle("pixelpal:copy-text", (_event, text) => {
+  clipboard.writeText(String(text || ""));
+  return true;
+});
 
 app.whenReady().then(() => {
   createWindow();
