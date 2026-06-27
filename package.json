@@ -1,0 +1,66 @@
+{
+  "name": "maban-pixelpal-crossplatform",
+  "version": "0.1.0",
+  "description": "码伴 PixelPal，一个会陪你办公、提醒和互动的像素桌面伙伴。",
+  "author": "Maban PixelPal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "electron:dev": "concurrently -k \"npm run dev -- --port 5174 --strictPort\" \"wait-on http://127.0.0.1:5174 && PIXELPAL_DEV_SERVER=http://127.0.0.1:5174 electron .\"",
+    "electron:local": "npm run build && electron .",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "dist": "npm run build && electron-builder --dir",
+    "pack": "npm run build && electron-builder",
+    "pack:mac": "npm run build && electron-builder --mac zip",
+    "pack:mac:dir": "npm run build && electron-builder --mac dir",
+    "pack:win": "npm run build && electron-builder --win nsis",
+    "pack:win:portable": "npm run build && electron-builder --win portable"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.maban.pixelpal",
+    "productName": "码伴 PixelPal",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "publish": null,
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "build/icon.png",
+      "target": "zip",
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "码伴 PixelPal"
+    }
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^7.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "electron": "^42.5.0",
+    "electron-builder": "^26.15.3",
+    "wait-on": "^9.0.10"
+  }
+}

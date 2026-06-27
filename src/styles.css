@@ -1,0 +1,114 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    linear-gradient(#ece7dd 1px, transparent 1px),
+    linear-gradient(90deg, #ece7dd 1px, transparent 1px),
+    #f4f0e8;
+  background-size: 32px 32px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #242424;
+}
+
+.pet {
+  position: fixed;
+  cursor: grab;
+  image-rendering: pixelated;
+  -webkit-app-region: drag;
+}
+
+.pet:active {
+  cursor: grabbing;
+}
+
+.pixel {
+  position: absolute;
+}
+
+.mini-bubble {
+  position: absolute;
+  right: 6px;
+  top: 8px;
+  height: 24px;
+  min-width: 32px;
+  border: 1px solid #77736c;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: #2a2a2b;
+  cursor: text;
+  line-height: 1;
+  -webkit-app-region: no-drag;
+}
+
+.inline-command {
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  z-index: 4;
+  -webkit-app-region: no-drag;
+}
+
+.inline-command input {
+  width: 168px;
+  height: 30px;
+  border: 1px solid #77736c;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: #242424;
+  padding: 0 10px;
+  outline: none;
+}
+
+.speech {
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  max-width: 176px;
+  min-height: 36px;
+  border: 1px solid #77736c;
+  border-radius: 10px;
+  background: #fffaf0;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.35;
+  z-index: 3;
+}
+
+.speech::after {
+  content: "";
+  position: absolute;
+  left: 74px;
+  bottom: -9px;
+  width: 14px;
+  height: 14px;
+  background: #fffaf0;
+  border-right: 1px solid #77736c;
+  border-bottom: 1px solid #77736c;
+  transform: rotate(45deg);
+}
+
+.panel {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #ddd6ca;
+  border-radius: 8px;
+  background: rgba(255, 250, 240, 0.82);
+  -webkit-app-region: no-drag;
+}
+
+.panel button {
+  height: 32px;
+  border: 1px solid #cfc7bb;
+  border-radius: 6px;
+  background: #fffaf0;
+  cursor: pointer;
+}
