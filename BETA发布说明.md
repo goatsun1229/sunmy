@@ -1,5 +1,7 @@
 # 码伴 PixelPal Beta 发布说明
 
+当前版本：0.2.0
+
 ## macOS Beta
 
 已生成 macOS Apple Silicon 测试包：
@@ -45,6 +47,8 @@ npm run pack:win
 - Electron 跨平台桌面壳
 - 透明无边框置顶窗口
 - 系统托盘菜单
+- 首次启动设置：宠物名、主人名、智能陪伴、DeepSeek Key
+- 提醒管理：添加定时提醒、2小时提醒、查看和删除提醒
 - 打开网页
 - 打开本地应用桥接
 - 前台应用识别基础接口
@@ -57,7 +61,8 @@ npm run pack:win
 
 ## 下一步
 
-1. 上传 GitHub，运行自动打包，拿到 Windows `.exe`。
-2. 给 macOS 和 Windows 都补正式图标。
-3. 收集朋友测试反馈。
-4. 做正式签名和公证。
+1. 上传 GitHub，运行自动打包，拿到 0.2.0 测试包。
+2. 收集朋友测试反馈。
+3. 优化 Windows 前台软件识别和贴边隐藏动作。
+4. 给 macOS 和 Windows 都补正式图标。
+5. 做正式签名和公证。

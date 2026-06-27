@@ -29,6 +29,7 @@ type Settings = {
   scale: number;
   smartMode: boolean;
   autoMode: boolean;
+  onboardingDone: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -37,6 +38,7 @@ const defaultSettings: Settings = {
   scale: 1,
   smartMode: true,
   autoMode: true,
+  onboardingDone: false,
 };
 
 const states: PetState[] = [
@@ -95,6 +97,8 @@ function saveReminders(reminders: Reminder[]) {
 
 function App() {
   const [settings, setSettings] = useState(loadSettings);
+  const [setupOpen, setSetupOpen] = useState(() => !loadSettings().onboardingDone);
+  const [reminderOpen, setReminderOpen] = useState(false);
   const [petState, setPetState] = useState<PetState>("coding");
   const [tick, setTick] = useState(0);
   const [bubble, setBubble] = useState("");
@@ -102,6 +106,8 @@ function App() {
   const [inputOpen, setInputOpen] = useState(false);
   const [command, setCommand] = useState("");
   const [reminders, setReminders] = useState(loadReminders);
+  const [reminderMessage, setReminderMessage] = useState("起来走走，活动一下");
+  const [reminderTime, setReminderTime] = useState("18:00");
   const [position, setPosition] = useState({ x: 120, y: 120 });
   const [deepSeekReady, setDeepSeekReady] = useState(false);
   const dragRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
@@ -326,6 +332,32 @@ function App() {
     showBubble("好，每2小时提醒你");
   }
 
+  function addDailyReminder() {
+    const message = reminderMessage.trim() || "记得处理一下";
+    setReminders([
+      ...reminders,
+      {
+        id: crypto.randomUUID(),
+        type: "daily",
+        message,
+        time: reminderTime,
+      },
+    ]);
+    setReminderOpen(false);
+    showBubble(`好，${reminderTime}提醒你`, true);
+  }
+
+  function removeReminder(id: string) {
+    setReminders(reminders.filter((reminder) => reminder.id !== id));
+    showBubble("已删除提醒", true);
+  }
+
+  function finishSetup() {
+    setSettings({ ...settings, onboardingDone: true });
+    setSetupOpen(false);
+    showBubble(`${settings.ownerName}，我准备好啦`, true);
+  }
+
   async function setDeepSeekKey() {
     const value = window.prompt("输入 DeepSeek API Key，会加密保存在本机");
     if (value == null) return;
@@ -396,10 +428,58 @@ function App() {
         )}
         {bubble && tick <= bubbleUntil && <div className="speech">{bubble}</div>}
       </div>
+      {setupOpen && (
+        <section className="floating-card setup-card">
+          <h1>码伴 PixelPal</h1>
+          <label>
+            叫我
+            <input value={settings.petName} onChange={(event) => setSettings({ ...settings, petName: event.target.value })} />
+          </label>
+          <label>
+            主人
+            <input value={settings.ownerName} onChange={(event) => setSettings({ ...settings, ownerName: event.target.value })} />
+          </label>
+          <label className="toggle-row">
+            智能陪伴
+            <input type="checkbox" checked={settings.smartMode} onChange={(event) => setSettings({ ...settings, smartMode: event.target.checked })} />
+          </label>
+          <div className="card-actions">
+            <button onClick={() => void setDeepSeekKey()}>{deepSeekReady ? "更新Key" : "设置Key"}</button>
+            <button onClick={finishSetup}>开始</button>
+          </div>
+        </section>
+      )}
+      {reminderOpen && (
+        <section className="floating-card reminder-card">
+          <h2>提醒</h2>
+          <label>
+            内容
+            <input value={reminderMessage} onChange={(event) => setReminderMessage(event.target.value)} />
+          </label>
+          <label>
+            时间
+            <input type="time" value={reminderTime} onChange={(event) => setReminderTime(event.target.value)} />
+          </label>
+          <div className="card-actions">
+            <button onClick={addWalkReminder}>每2小时</button>
+            <button onClick={addDailyReminder}>添加</button>
+          </div>
+          <div className="reminder-list">
+            {reminders.length === 0 && <p>暂无提醒</p>}
+            {reminders.map((reminder) => (
+              <div className="reminder-item" key={reminder.id}>
+                <span>{reminder.type === "interval" ? "循环" : reminder.time || "一次"} · {reminder.message}</span>
+                <button onClick={() => removeReminder(reminder.id)}>删</button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       <nav className="panel">
         <button onClick={() => setPetState("coding")}>工作</button>
         <button onClick={() => setPetState("watching")}>看视频</button>
-        <button onClick={addWalkReminder}>2小时提醒</button>
+        <button onClick={() => setReminderOpen(!reminderOpen)}>提醒</button>
+        <button onClick={() => setSetupOpen(!setupOpen)}>设置</button>
         <button onClick={() => void setDeepSeekKey()}>{deepSeekReady ? "更新Key" : "设置Key"}</button>
         <button onClick={() => void copyFeedbackTemplate()}>反馈</button>
         <button onClick={() => setSettings({ ...settings, scale: Math.max(0.8, settings.scale - 0.1) })}>缩小</button>

@@ -60,8 +60,8 @@ function loadSecret(key) {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 260,
-    height: 250,
+    width: 380,
+    height: 420,
     frame: false,
     transparent: true,
     resizable: false,
