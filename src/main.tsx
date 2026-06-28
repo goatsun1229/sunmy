@@ -30,6 +30,7 @@ type Settings = {
   smartMode: boolean;
   autoMode: boolean;
   onboardingDone: boolean;
+  autoEdgeHide: boolean;
 };
 
 type Edge = "left" | "right" | "top" | "bottom";
@@ -41,6 +42,7 @@ const defaultSettings: Settings = {
   smartMode: true,
   autoMode: true,
   onboardingDone: false,
+  autoEdgeHide: true,
 };
 
 const states: PetState[] = [
@@ -113,7 +115,7 @@ function App() {
   const [position, setPosition] = useState({ x: 120, y: 120 });
   const [deepSeekReady, setDeepSeekReady] = useState(false);
   const [edgePose, setEdgePose] = useState<Edge | null>(null);
-  const dragRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
+  const dragRef = useRef<{ x: number; y: number; left: number; top: number; moved: boolean } | null>(null);
 
   useEffect(() => saveSettings(settings), [settings]);
   useEffect(() => saveReminders(reminders), [reminders]);
@@ -132,9 +134,9 @@ function App() {
     const timer = window.setInterval(async () => {
       const context = await window.pixelpal?.activeContext();
       const text = `${context?.app || ""} ${context?.title || ""}`.toLowerCase();
-      if (/youtube|bilibili|哔哩|b站|netflix|twitch|vlc|iina|quicktime/.test(text)) setPetState("watching");
-      else if (/codex|claude|cursor|code|xcode|terminal|iterm|warp|capcut|剪映|visual studio/.test(text)) setPetState("coding");
-      else if (/notion|notes|备忘录|word|pages|obsidian|docs/.test(text)) setPetState("writing");
+      if (/youtube|bilibili|哔哩|b站|netflix|twitch|vlc|iina|quicktime|chrome|edge|firefox/.test(text)) setPetState("watching");
+      else if (/codex|claude|cursor|code|xcode|terminal|iterm|warp|powershell|cmd|windows terminal|capcut|剪映|visual studio|devenv|pycharm|webstorm/.test(text)) setPetState("coding");
+      else if (/notion|notes|备忘录|word|pages|obsidian|docs|excel|powerpoint|wps|onenote/.test(text)) setPetState("writing");
     }, 2500);
     return () => window.clearInterval(timer);
   }, [settings.smartMode]);
@@ -398,6 +400,7 @@ function App() {
   }
 
   async function snapToEdge() {
+    if (setupOpen || reminderOpen || inputOpen) return;
     const result = await window.pixelpal?.snapEdge();
     if (result?.hidden && result.edge) {
       setEdgePose(result.edge);
@@ -421,26 +424,33 @@ function App() {
         style={{ left: position.x, top: position.y, width: 184 * settings.scale, height: 176 * settings.scale }}
         onMouseEnter={() => void revealFromEdge()}
         onPointerDown={(event) => {
+          const target = event.target as HTMLElement;
+          if (target.closest("[data-no-drag]")) return;
           if (edgePose) void revealFromEdge();
-          dragRef.current = { x: event.clientX, y: event.clientY, left: position.x, top: position.y };
+          dragRef.current = { x: event.clientX, y: event.clientY, left: position.x, top: position.y, moved: false };
           (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
           if (!dragRef.current) return;
-          setPosition({ x: dragRef.current.left + event.clientX - dragRef.current.x, y: dragRef.current.top + event.clientY - dragRef.current.y });
+          const dx = event.clientX - dragRef.current.x;
+          const dy = event.clientY - dragRef.current.y;
+          dragRef.current.moved = dragRef.current.moved || Math.abs(dx) + Math.abs(dy) > 8;
+          setPosition({ x: dragRef.current.left + dx, y: dragRef.current.top + dy });
         }}
         onPointerUp={() => {
+          const moved = Boolean(dragRef.current?.moved);
           dragRef.current = null;
-          void snapToEdge();
+          if (moved && settings.autoEdgeHide) void snapToEdge();
         }}
         onDoubleClick={nextState}
       >
         {pixels}
-        <button className="mini-bubble" onMouseEnter={() => setInputOpen(true)} onClick={() => setInputOpen(true)}>
+        <button data-no-drag className="mini-bubble" onMouseEnter={() => setInputOpen(true)} onClick={() => setInputOpen(true)}>
           ...
         </button>
         {inputOpen && (
           <form
+            data-no-drag
             className="inline-command"
             onSubmit={(event) => {
               event.preventDefault();
@@ -452,10 +462,10 @@ function App() {
             <input autoFocus value={command} onChange={(event) => setCommand(event.target.value)} placeholder="问我或让我打开..." />
           </form>
         )}
-        {bubble && tick <= bubbleUntil && <div className="speech">{bubble}</div>}
+        {bubble && tick <= bubbleUntil && <div data-no-drag className="speech">{bubble}</div>}
       </div>
       {setupOpen && (
-        <section className="floating-card setup-card">
+        <section data-no-drag className="floating-card setup-card">
           <h1>码伴 PixelPal</h1>
           <label>
             叫我
@@ -469,6 +479,10 @@ function App() {
             智能陪伴
             <input type="checkbox" checked={settings.smartMode} onChange={(event) => setSettings({ ...settings, smartMode: event.target.checked })} />
           </label>
+          <label className="toggle-row">
+            自动贴边
+            <input type="checkbox" checked={settings.autoEdgeHide} onChange={(event) => setSettings({ ...settings, autoEdgeHide: event.target.checked })} />
+          </label>
           <div className="card-actions">
             <button onClick={() => void setDeepSeekKey()}>{deepSeekReady ? "更新Key" : "设置Key"}</button>
             <button onClick={finishSetup}>开始</button>
@@ -476,7 +490,7 @@ function App() {
         </section>
       )}
       {reminderOpen && (
-        <section className="floating-card reminder-card">
+        <section data-no-drag className="floating-card reminder-card">
           <h2>提醒</h2>
           <label>
             内容
@@ -501,7 +515,7 @@ function App() {
           </div>
         </section>
       )}
-      <nav className="panel">
+      <nav data-no-drag className="panel">
         <button onClick={() => setPetState("coding")}>工作</button>
         <button onClick={() => setPetState("watching")}>看视频</button>
         <button onClick={() => setReminderOpen(!reminderOpen)}>提醒</button>

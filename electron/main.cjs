@@ -9,9 +9,33 @@ let mainWindow;
 let tray;
 let hiddenEdge = null;
 let visibleBounds = null;
+let saveBoundsTimer = null;
 
 function secretPath() {
   return path.join(app.getPath("userData"), "secrets.json");
+}
+
+function windowStatePath() {
+  return path.join(app.getPath("userData"), "window-state.json");
+}
+
+function readWindowState() {
+  try {
+    return JSON.parse(fs.readFileSync(windowStatePath(), "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveWindowState(bounds) {
+  fs.mkdirSync(path.dirname(windowStatePath()), { recursive: true });
+  fs.writeFileSync(windowStatePath(), JSON.stringify({ bounds }, null, 2));
+}
+
+function scheduleSaveBounds(bounds) {
+  if (hiddenEdge) return;
+  if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
+  saveBoundsTimer = setTimeout(() => saveWindowState(bounds), 300);
 }
 
 function readSecrets() {
@@ -61,7 +85,10 @@ function loadSecret(key) {
 }
 
 function createWindow() {
+  const saved = readWindowState().bounds || {};
   const win = new BrowserWindow({
+    x: Number.isFinite(saved.x) ? saved.x : undefined,
+    y: Number.isFinite(saved.y) ? saved.y : undefined,
     width: 380,
     height: 420,
     frame: false,
@@ -81,7 +108,10 @@ function createWindow() {
 
   win.setAlwaysOnTop(true, "floating");
   win.on("move", () => {
-    if (!hiddenEdge) visibleBounds = win.getBounds();
+    if (!hiddenEdge) {
+      visibleBounds = win.getBounds();
+      scheduleSaveBounds(visibleBounds);
+    }
   });
 
   if (devServer) {
@@ -135,6 +165,7 @@ function setEdgeHidden(edge) {
   }
   hiddenEdge = edge;
   visibleBounds = bounds;
+  saveWindowState(bounds);
   mainWindow.setBounds(hiddenBounds(bounds, edge), true);
   return { hidden: true, edge };
 }
@@ -228,15 +259,29 @@ function activeContext() {
         "public class Win {",
         "[DllImport(\"user32.dll\")] public static extern IntPtr GetForegroundWindow();",
         "[DllImport(\"user32.dll\")] public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);",
+        "[DllImport(\"user32.dll\")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);",
         "}",
         "'@;",
         "$h=[Win]::GetForegroundWindow();",
         "$b=New-Object Text.StringBuilder 1024;",
         "[void][Win]::GetWindowText($h,$b,$b.Capacity);",
-        "$b.ToString()",
+        "$pid=0;",
+        "[void][Win]::GetWindowThreadProcessId($h,[ref]$pid);",
+        "$p=Get-Process -Id $pid -ErrorAction SilentlyContinue;",
+        "$name=if ($p) { $p.ProcessName } else { '' };",
+        "$title=$b.ToString();",
+        "ConvertTo-Json @{ app=$name; title=$title } -Compress",
       ].join("\n");
       execFile("powershell.exe", ["-NoProfile", "-Command", ps], (error, stdout) => {
-        resolve({ app: "", title: error ? "" : stdout.trim() });
+        if (error) {
+          resolve({ app: "", title: "" });
+          return;
+        }
+        try {
+          resolve(JSON.parse(stdout.trim()));
+        } catch {
+          resolve({ app: "", title: stdout.trim() });
+        }
       });
       return;
     }
@@ -272,7 +317,9 @@ ipcMain.handle("pixelpal:reveal-edge", () => {
   const edge = hiddenEdge;
   const bounds = visibleBounds || mainWindow.getBounds();
   hiddenEdge = null;
-  mainWindow.setBounds(revealBounds(bounds, edge), true);
+  const next = revealBounds(bounds, edge);
+  mainWindow.setBounds(next, true);
+  saveWindowState(next);
   return { hidden: false, edge: null };
 });
 
