@@ -189,6 +189,27 @@ a {
   margin-top: 14px;
 }
 
+.doc {
+  max-width: 760px;
+}
+
+.doc h1 {
+  font-size: 42px;
+  line-height: 1.05;
+}
+
+.doc-section {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #ddd6ca;
+  border-radius: 8px;
+  background: rgba(255, 250, 240, 0.86);
+}
+
+.doc-section p + p {
+  margin-top: 8px;
+}
+
 @media (max-width: 860px) {
   .hero {
     grid-template-columns: 1fr;
