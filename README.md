@@ -59,3 +59,4 @@ npm run pack:win
 - `发布包命名规则.md`：下载包改名和版本命名规则。
 - `下载页发布说明.md`：公开试用下载页的使用方式。
 - `download-page/index.html`：可直接发布的静态下载页。
+- `.github/workflows/deploy-download-page.yml`：GitHub Pages 自动发布下载页。
