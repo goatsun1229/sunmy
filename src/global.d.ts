@@ -1,9 +1,17 @@
 export {};
 
 declare global {
+  type PixelPalProductPage = "home" | "download" | "privacy" | "terms" | "feedback" | "release";
+
   interface Window {
     pixelpal?: {
       openUrl: (url: string) => Promise<boolean>;
+      openProductPage: (page: PixelPalProductPage) => Promise<boolean>;
+      productInfo: () => Promise<{
+        name: string;
+        version: string;
+        pages: Record<PixelPalProductPage, string>;
+      }>;
       openApp: (target: string) => Promise<boolean>;
       platform: () => Promise<{ platform: string; home: string }>;
       activeContext: () => Promise<{ app: string; title: string }>;

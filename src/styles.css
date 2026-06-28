@@ -233,6 +233,27 @@ body {
   font-size: 12px;
 }
 
+.about-card p {
+  margin: 0 0 10px;
+  color: #4c4c4e;
+  font-size: 12px;
+}
+
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.link-grid button {
+  min-width: 0;
+  height: 30px;
+  border: 1px solid #cfc7bb;
+  border-radius: 6px;
+  background: #fffdf7;
+  cursor: pointer;
+}
+
 .reminder-item {
   display: grid;
   grid-template-columns: 1fr auto;

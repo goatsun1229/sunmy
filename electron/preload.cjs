@@ -2,6 +2,8 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("pixelpal", {
   openUrl: (url) => ipcRenderer.invoke("pixelpal:open-url", url),
+  openProductPage: (page) => ipcRenderer.invoke("pixelpal:open-product-page", page),
+  productInfo: () => ipcRenderer.invoke("pixelpal:product-info"),
   openApp: (target) => ipcRenderer.invoke("pixelpal:open-app", target),
   platform: () => ipcRenderer.invoke("pixelpal:platform"),
   activeContext: () => ipcRenderer.invoke("pixelpal:active-context"),

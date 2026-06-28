@@ -26,8 +26,8 @@ v1.0.0-beta.1
 6. 把两个安装包改名为：
 
 ```text
-码伴-PixelPal-1.0.0-beta.1-macOS.zip
-码伴-PixelPal-1.0.0-beta.1-Windows.zip
+-PixelPal-1.0.0-beta.1-macOS.zip
+-PixelPal-1.0.0-beta.1-Windows.zip
 ```
 
 7. 拖到 Release 的附件区域。
@@ -35,11 +35,11 @@ v1.0.0-beta.1
 
 ## 下载页链接
 
-下载页已经使用 Release 链接：
+下载页已经使用固定版本 Release 链接：
 
 ```text
-https://github.com/goatsun1229/sunmy/releases/latest/download/码伴-PixelPal-1.0.0-beta.1-macOS.zip
-https://github.com/goatsun1229/sunmy/releases/latest/download/码伴-PixelPal-1.0.0-beta.1-Windows.zip
+https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.1/-PixelPal-1.0.0-beta.1-macOS.zip
+https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.1/-PixelPal-1.0.0-beta.1-Windows.zip
 ```
 
-只要 Release 附件名字完全一致，下载按钮就能用。
+只要 tag 是 `v1.0.0-beta.1`，并且 Release 附件名字完全一致，下载按钮就能用。

@@ -11,6 +11,15 @@ let hiddenEdge = null;
 let visibleBounds = null;
 let saveBoundsTimer = null;
 
+const productPages = {
+  home: "https://goatsun1229.github.io/sunmy/",
+  download: "https://goatsun1229.github.io/sunmy/",
+  privacy: "https://goatsun1229.github.io/sunmy/privacy.html",
+  terms: "https://goatsun1229.github.io/sunmy/terms.html",
+  feedback: "https://goatsun1229.github.io/sunmy/feedback.html",
+  release: "https://github.com/goatsun1229/sunmy/releases/latest",
+};
+
 function secretPath() {
   return path.join(app.getPath("userData"), "secrets.json");
 }
@@ -119,6 +128,19 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, "..", "dist", "index.html"));
   }
+
+  win.webContents.on("context-menu", () => {
+    Menu.buildFromTemplate([
+      { label: "关于码伴 PixelPal", click: () => shell.openExternal(productPages.home) },
+      { label: "检查更新", click: () => shell.openExternal(productPages.release) },
+      { type: "separator" },
+      { label: "隐私政策", click: () => shell.openExternal(productPages.privacy) },
+      { label: "用户协议", click: () => shell.openExternal(productPages.terms) },
+      { label: "反馈方式", click: () => shell.openExternal(productPages.feedback) },
+      { type: "separator" },
+      { label: "退出", click: () => app.quit() },
+    ]).popup({ window: win });
+  });
 }
 
 function nearestDisplayWorkArea(bounds) {
@@ -294,6 +316,18 @@ ipcMain.handle("pixelpal:open-url", async (_event, url) => {
   await shell.openExternal(url);
   return true;
 });
+
+ipcMain.handle("pixelpal:open-product-page", async (_event, page) => {
+  const url = productPages[String(page || "home")] || productPages.home;
+  await shell.openExternal(url);
+  return true;
+});
+
+ipcMain.handle("pixelpal:product-info", () => ({
+  name: app.getName(),
+  version: app.getVersion(),
+  pages: productPages,
+}));
 
 ipcMain.handle("pixelpal:open-app", async (_event, target) => {
   return openApp(String(target || ""));

@@ -34,6 +34,7 @@ type Settings = {
 };
 
 type Edge = "left" | "right" | "top" | "bottom";
+type ProductPage = "home" | "download" | "privacy" | "terms" | "feedback" | "release";
 
 const defaultSettings: Settings = {
   petName: "小码",
@@ -103,6 +104,7 @@ function App() {
   const [settings, setSettings] = useState(loadSettings);
   const [setupOpen, setSetupOpen] = useState(() => !loadSettings().onboardingDone);
   const [reminderOpen, setReminderOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [petState, setPetState] = useState<PetState>("coding");
   const [tick, setTick] = useState(0);
   const [bubble, setBubble] = useState("");
@@ -114,6 +116,7 @@ function App() {
   const [reminderTime, setReminderTime] = useState("18:00");
   const [position, setPosition] = useState({ x: 120, y: 120 });
   const [deepSeekReady, setDeepSeekReady] = useState(false);
+  const [appVersion, setAppVersion] = useState("1.0.0-beta.1");
   const [edgePose, setEdgePose] = useState<Edge | null>(null);
   const dragRef = useRef<{ x: number; y: number; left: number; top: number; moved: boolean } | null>(null);
 
@@ -122,6 +125,7 @@ function App() {
 
   useEffect(() => {
     void window.pixelpal?.loadSecret("deepseek_key").then((value) => setDeepSeekReady(Boolean(value)));
+    void window.pixelpal?.productInfo().then((info) => setAppVersion(info.version));
   }, []);
 
   useEffect(() => {
@@ -236,6 +240,32 @@ function App() {
     const raw = text.trim();
     const lower = raw.toLowerCase();
     if (!raw) return;
+
+    if (/关于|版本|官网|下载页|主页|home|website/.test(lower)) {
+      setAboutOpen(true);
+      showBubble("产品信息在这里", true);
+      return;
+    }
+
+    if (/检查更新|更新|最新版|release/.test(lower)) {
+      await openProductPage("release", "打开更新页啦");
+      return;
+    }
+
+    if (/隐私|privacy/.test(lower)) {
+      await openProductPage("privacy", "隐私政策打开啦");
+      return;
+    }
+
+    if (/协议|条款|terms/.test(lower)) {
+      await openProductPage("terms", "用户协议打开啦");
+      return;
+    }
+
+    if (/反馈方式|反馈页面|feedback page/.test(lower)) {
+      await openProductPage("feedback", "反馈方式打开啦");
+      return;
+    }
 
     if (/反馈|问题|bug|故障|不好用|建议/.test(lower)) {
       await copyFeedbackTemplate();
@@ -370,6 +400,12 @@ function App() {
     const ok = await window.pixelpal?.saveSecret("deepseek_key", value.trim());
     setDeepSeekReady(Boolean(value.trim()));
     showBubble(ok ? "Key 已保存" : "保存失败");
+  }
+
+  async function openProductPage(page: ProductPage, message = "打开啦") {
+    const opened = await window.pixelpal?.openProductPage(page);
+    setPetState(opened ? "success" : "error");
+    showBubble(opened ? message : "没打开成功", true);
   }
 
   async function copyFeedbackTemplate() {
@@ -515,6 +551,20 @@ function App() {
           </div>
         </section>
       )}
+      {aboutOpen && (
+        <section data-no-drag className="floating-card about-card">
+          <h2>关于码伴</h2>
+          <p>版本 {appVersion}</p>
+          <div className="link-grid">
+            <button onClick={() => void openProductPage("download", "下载页打开啦")}>下载页</button>
+            <button onClick={() => void openProductPage("release", "更新页打开啦")}>更新</button>
+            <button onClick={() => void openProductPage("privacy", "隐私政策打开啦")}>隐私</button>
+            <button onClick={() => void openProductPage("terms", "用户协议打开啦")}>协议</button>
+            <button onClick={() => void openProductPage("feedback", "反馈方式打开啦")}>反馈</button>
+            <button onClick={() => setAboutOpen(false)}>收起</button>
+          </div>
+        </section>
+      )}
       <nav data-no-drag className="panel">
         <button onClick={() => setPetState("coding")}>工作</button>
         <button onClick={() => setPetState("watching")}>看视频</button>
@@ -522,6 +572,7 @@ function App() {
         <button onClick={() => setSetupOpen(!setupOpen)}>设置</button>
         <button onClick={() => void setDeepSeekKey()}>{deepSeekReady ? "更新Key" : "设置Key"}</button>
         <button onClick={() => void copyFeedbackTemplate()}>反馈</button>
+        <button onClick={() => setAboutOpen(!aboutOpen)}>关于</button>
         <button onClick={() => setSettings({ ...settings, scale: Math.max(0.8, settings.scale - 0.1) })}>缩小</button>
         <button onClick={() => setSettings({ ...settings, scale: Math.min(1.5, settings.scale + 0.1) })}>放大</button>
         <button onClick={() => void snapToEdge()}>贴边</button>
