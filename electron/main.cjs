@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, Tray, clipboard, ipcMain, nativeImage, safeStorage, shell } = require("electron");
+const { app, BrowserWindow, Menu, Tray, clipboard, ipcMain, nativeImage, safeStorage, screen, shell } = require("electron");
 const path = require("path");
 const os = require("os");
 const fs = require("fs");
@@ -7,6 +7,8 @@ const { execFile, spawn } = require("child_process");
 const devServer = process.env.PIXELPAL_DEV_SERVER;
 let mainWindow;
 let tray;
+let hiddenEdge = null;
+let visibleBounds = null;
 
 function secretPath() {
   return path.join(app.getPath("userData"), "secrets.json");
@@ -78,12 +80,63 @@ function createWindow() {
   mainWindow = win;
 
   win.setAlwaysOnTop(true, "floating");
+  win.on("move", () => {
+    if (!hiddenEdge) visibleBounds = win.getBounds();
+  });
 
   if (devServer) {
     win.loadURL(devServer);
   } else {
     win.loadFile(path.join(__dirname, "..", "dist", "index.html"));
   }
+}
+
+function nearestDisplayWorkArea(bounds) {
+  return screen.getDisplayMatching(bounds).workArea;
+}
+
+function edgeForBounds(bounds) {
+  const area = nearestDisplayWorkArea(bounds);
+  const margin = 18;
+  if (bounds.x <= area.x + margin) return "left";
+  if (bounds.x + bounds.width >= area.x + area.width - margin) return "right";
+  if (bounds.y <= area.y + margin) return "top";
+  if (bounds.y + bounds.height >= area.y + area.height - margin) return "bottom";
+  return null;
+}
+
+function hiddenBounds(bounds, edge) {
+  const area = nearestDisplayWorkArea(bounds);
+  const peek = 56;
+  const next = { ...bounds };
+  if (edge === "left") next.x = area.x - bounds.width + peek;
+  if (edge === "right") next.x = area.x + area.width - peek;
+  if (edge === "top") next.y = area.y - bounds.height + peek;
+  if (edge === "bottom") next.y = area.y + area.height - peek;
+  return next;
+}
+
+function revealBounds(bounds, edge) {
+  const area = nearestDisplayWorkArea(bounds);
+  const next = { ...bounds };
+  if (edge === "left") next.x = area.x + 8;
+  if (edge === "right") next.x = area.x + area.width - bounds.width - 8;
+  if (edge === "top") next.y = area.y + 8;
+  if (edge === "bottom") next.y = area.y + area.height - bounds.height - 8;
+  return next;
+}
+
+function setEdgeHidden(edge) {
+  if (!mainWindow) return { hidden: false, edge: null };
+  const bounds = mainWindow.getBounds();
+  if (!edge) {
+    hiddenEdge = null;
+    return { hidden: false, edge: null };
+  }
+  hiddenEdge = edge;
+  visibleBounds = bounds;
+  mainWindow.setBounds(hiddenBounds(bounds, edge), true);
+  return { hidden: true, edge };
 }
 
 function createTray() {
@@ -207,6 +260,21 @@ ipcMain.handle("pixelpal:platform", () => ({
 }));
 
 ipcMain.handle("pixelpal:active-context", () => activeContext());
+
+ipcMain.handle("pixelpal:snap-edge", () => {
+  if (!mainWindow) return { hidden: false, edge: null };
+  const bounds = mainWindow.getBounds();
+  return setEdgeHidden(edgeForBounds(bounds));
+});
+
+ipcMain.handle("pixelpal:reveal-edge", () => {
+  if (!mainWindow || !hiddenEdge) return { hidden: false, edge: null };
+  const edge = hiddenEdge;
+  const bounds = visibleBounds || mainWindow.getBounds();
+  hiddenEdge = null;
+  mainWindow.setBounds(revealBounds(bounds, edge), true);
+  return { hidden: false, edge: null };
+});
 
 ipcMain.handle("pixelpal:close", () => {
   app.quit();

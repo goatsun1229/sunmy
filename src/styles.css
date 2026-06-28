@@ -26,6 +26,47 @@ body {
   cursor: grabbing;
 }
 
+.edge-pose {
+  cursor: pointer;
+}
+
+.edge-pose::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  background: rgba(42, 42, 43, 0.2);
+}
+
+.edge-left::before,
+.edge-right::before {
+  top: 34px;
+  width: 8px;
+  height: 92px;
+}
+
+.edge-left::before {
+  right: 0;
+}
+
+.edge-right::before {
+  left: 0;
+}
+
+.edge-top::before,
+.edge-bottom::before {
+  left: 36px;
+  width: 92px;
+  height: 8px;
+}
+
+.edge-top::before {
+  bottom: 0;
+}
+
+.edge-bottom::before {
+  top: 0;
+}
+
 .pixel {
   position: absolute;
 }

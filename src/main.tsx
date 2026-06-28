@@ -32,6 +32,8 @@ type Settings = {
   onboardingDone: boolean;
 };
 
+type Edge = "left" | "right" | "top" | "bottom";
+
 const defaultSettings: Settings = {
   petName: "小码",
   ownerName: "主人",
@@ -110,6 +112,7 @@ function App() {
   const [reminderTime, setReminderTime] = useState("18:00");
   const [position, setPosition] = useState({ x: 120, y: 120 });
   const [deepSeekReady, setDeepSeekReady] = useState(false);
+  const [edgePose, setEdgePose] = useState<Edge | null>(null);
   const dragRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
 
   useEffect(() => saveSettings(settings), [settings]);
@@ -219,12 +222,13 @@ function App() {
       add(px(19 + lean, 16, 6, 1, palette.glasses), px(19 + lean, 16, 1, 4, palette.glasses), px(24 + lean, 16, 1, 4, palette.glasses), px(27 + lean, 16, 6, 1, palette.glasses), px(27 + lean, 16, 1, 4, palette.glasses), px(32 + lean, 16, 1, 4, palette.glasses), px(25 + lean, 18, 2, 1, palette.glasses));
     }
 
-    if (petState === "coffee") add(px(12, 23, 4, 3, palette.cream), px(34, 25, 3, 2, palette.creamLo), px(10, 24, 4, 5, palette.cup), px(14, 25, 1, 2, palette.cup));
+    if (edgePose) add(px(11, 10, 3, 18, "#c9beaa"), px(35, 10, 3, 18, "#c9beaa"), px(10, 27, 5, 3, palette.cream), px(34, 27, 5, 3, palette.creamLo));
+    else if (petState === "coffee") add(px(12, 23, 4, 3, palette.cream), px(34, 25, 3, 2, palette.creamLo), px(10, 24, 4, 5, palette.cup), px(14, 25, 1, 2, palette.cup));
     else if (petState === "sleep") add(px(14, 26, 7, 2, palette.cream), px(31, 27, 4, 2, palette.creamLo), px(22, 27, 13, 3, "#cfc7bb"));
     else add(px(13, 25 + tap, 5, 3, palette.cream), px(32, 26 - tap, 5, 3, palette.creamLo));
 
     return out.map((node, index) => <React.Fragment key={index}>{node}</React.Fragment>);
-  }, [petState, settings.scale, tick]);
+  }, [edgePose, petState, settings.scale, tick]);
 
   async function handleCommand(text: string) {
     const raw = text.trim();
@@ -393,12 +397,31 @@ function App() {
     showBubble("反馈模板已复制", true);
   }
 
+  async function snapToEdge() {
+    const result = await window.pixelpal?.snapEdge();
+    if (result?.hidden && result.edge) {
+      setEdgePose(result.edge);
+      showBubble("我扒在边边啦", true);
+    } else {
+      showBubble("把我拖到屏幕边缘试试", true);
+    }
+  }
+
+  async function revealFromEdge() {
+    if (!edgePose) return;
+    await window.pixelpal?.revealEdge();
+    setEdgePose(null);
+    showBubble("我出来啦", true);
+  }
+
   return (
     <main>
       <div
-        className="pet"
+        className={`pet ${edgePose ? `edge-pose edge-${edgePose}` : ""}`}
         style={{ left: position.x, top: position.y, width: 184 * settings.scale, height: 176 * settings.scale }}
+        onMouseEnter={() => void revealFromEdge()}
         onPointerDown={(event) => {
+          if (edgePose) void revealFromEdge();
           dragRef.current = { x: event.clientX, y: event.clientY, left: position.x, top: position.y };
           (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
         }}
@@ -406,7 +429,10 @@ function App() {
           if (!dragRef.current) return;
           setPosition({ x: dragRef.current.left + event.clientX - dragRef.current.x, y: dragRef.current.top + event.clientY - dragRef.current.y });
         }}
-        onPointerUp={() => (dragRef.current = null)}
+        onPointerUp={() => {
+          dragRef.current = null;
+          void snapToEdge();
+        }}
         onDoubleClick={nextState}
       >
         {pixels}
@@ -484,6 +510,7 @@ function App() {
         <button onClick={() => void copyFeedbackTemplate()}>反馈</button>
         <button onClick={() => setSettings({ ...settings, scale: Math.max(0.8, settings.scale - 0.1) })}>缩小</button>
         <button onClick={() => setSettings({ ...settings, scale: Math.min(1.5, settings.scale + 0.1) })}>放大</button>
+        <button onClick={() => void snapToEdge()}>贴边</button>
         <button onClick={() => void window.pixelpal?.close()}>关闭</button>
       </nav>
     </main>
