@@ -1,6 +1,6 @@
 {
   "name": "maban-pixelpal-crossplatform",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "码伴 PixelPal，一个会陪你办公、提醒和互动的像素桌面伙伴。",
   "author": "Maban PixelPal",
   "private": true,
@@ -34,11 +34,12 @@
       "package.json"
     ],
     "mac": {
-      "icon": "build/icon.png",
+      "icon": "build/icon.icns",
       "target": "zip",
       "category": "public.app-category.productivity"
     },
     "win": {
+      "icon": "build/icon.ico",
       "target": "nsis",
       "requestedExecutionLevel": "asInvoker"
     },
