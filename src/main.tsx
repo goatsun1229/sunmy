@@ -4,6 +4,7 @@ import { dialogueByCategory } from "./pet-system/dialogues";
 import { addActiveMinute, equipItem, eveningSummary, greetingFor, maybeRandomEvent, recordInteraction, saveSevenDayCard } from "./pet-system/engine";
 import { createDefaultCompanion, exportCompanion, importCompanion, loadCompanion, personalityDescription, saveCompanion } from "./pet-system/storage";
 import type { CompanionData } from "./pet-system/types";
+import { actionForState, expressionForState, RobotPet } from "./pet-visual/RobotPet";
 import "./styles.css";
 
 type PetState =
@@ -35,6 +36,7 @@ type Settings = {
   autoMode: boolean;
   onboardingDone: boolean;
   autoEdgeHide: boolean;
+  visualStyle: "companionRobot" | "classicPixel";
 };
 
 type Edge = "left" | "right" | "top" | "bottom";
@@ -48,6 +50,7 @@ const defaultSettings: Settings = {
   autoMode: true,
   onboardingDone: false,
   autoEdgeHide: true,
+  visualStyle: "companionRobot",
 };
 
 const states: PetState[] = [
@@ -122,7 +125,7 @@ function App() {
   const [reminderTime, setReminderTime] = useState("18:00");
   const [position, setPosition] = useState({ x: 120, y: 120 });
   const [deepSeekReady, setDeepSeekReady] = useState(false);
-  const [appVersion, setAppVersion] = useState("1.0.0-beta.4");
+  const [appVersion, setAppVersion] = useState("1.0.0-beta.5");
   const [edgePose, setEdgePose] = useState<Edge | null>(null);
   const [companion, setCompanion] = useState<CompanionData>(() => loadCompanion(loadSettings()));
   const dragRef = useRef<{ x: number; y: number; left: number; top: number; moved: boolean } | null>(null);
@@ -584,7 +587,17 @@ function App() {
         }}
         onDoubleClick={nextState}
       >
-        {pixels}
+        {settings.visualStyle === "companionRobot" ? (
+          <RobotPet
+            action={edgePose ? "idle" : actionForState(petState)}
+            expression={expressionForState(petState, tick)}
+            equippedItemIds={companion.stats.equippedItemIds}
+            quiet={Boolean(companion.quietMode.enabled || (companion.quietMode.until && Date.now() < companion.quietMode.until))}
+            edgePose={edgePose}
+          />
+        ) : (
+          pixels
+        )}
         <button data-no-drag className="mini-bubble" onMouseEnter={() => setInputOpen(true)} onClick={() => setInputOpen(true)}>
           ...
         </button>
@@ -622,6 +635,13 @@ function App() {
           <label className="toggle-row">
             自动贴边
             <input type="checkbox" checked={settings.autoEdgeHide} onChange={(event) => setSettings({ ...settings, autoEdgeHide: event.target.checked })} />
+          </label>
+          <label>
+            角色
+            <select value={settings.visualStyle} onChange={(event) => setSettings({ ...settings, visualStyle: event.target.value as Settings["visualStyle"] })}>
+              <option value="companionRobot">圆舱机器人</option>
+              <option value="classicPixel">经典像素</option>
+            </select>
           </label>
           <div className="card-actions">
             <button onClick={() => void setDeepSeekKey()}>{deepSeekReady ? "更新Key" : "设置Key"}</button>

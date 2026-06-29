@@ -1,7 +1,7 @@
 import type { Achievement, Collectible, RandomEventConfig } from "./types";
 
 export const SCHEMA_VERSION = 1;
-export const APP_VERSION = "1.0.0-beta.4";
+export const APP_VERSION = "1.0.0-beta.5";
 
 export const dailyTasks = [
   { id: "pet_once", label: "摸摸它一次" },
@@ -31,18 +31,48 @@ export const starterCollectibles: Collectible[] = [
     equipped: true,
   },
   {
-    itemId: "hat_soft_cap",
+    itemId: "robot_sleep_cap",
     itemType: "hat",
-    name: "软软小帽",
-    description: "一顶轻便的小帽子。",
+    name: "小型睡帽",
+    description: "深夜陪伴时也很轻的睡帽。",
     rarity: "common",
-    assetPath: "placeholder:hat",
+    assetPath: "svg-slot:head:sleep-cap",
     unlockType: "free",
-    unlockCondition: "day_3",
+    unlockCondition: "starter",
     price: 0,
     currencyType: "free",
     isLimited: false,
-    owned: false,
+    owned: true,
+    equipped: false,
+  },
+  {
+    itemId: "robot_bowtie",
+    itemType: "accessory",
+    name: "简洁领结",
+    description: "适合正式陪伴日的小领结。",
+    rarity: "common",
+    assetPath: "svg-slot:neck:bowtie",
+    unlockType: "free",
+    unlockCondition: "starter",
+    price: 0,
+    currencyType: "free",
+    isLimited: false,
+    owned: true,
+    equipped: false,
+  },
+  {
+    itemId: "robot_star",
+    itemType: "hat",
+    name: "头顶小星星",
+    description: "轻轻亮起的小星星，不打扰你。",
+    rarity: "common",
+    assetPath: "svg-slot:head:star",
+    unlockType: "free",
+    unlockCondition: "starter",
+    price: 0,
+    currencyType: "free",
+    isLimited: false,
+    owned: true,
     equipped: false,
   },
   {

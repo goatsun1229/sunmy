@@ -1,0 +1,14 @@
+{
+  "characterId": "companion_robot_01",
+  "name": "Original Companion Robot",
+  "renderMode": "svg-dom",
+  "canvas": {
+    "width": 184,
+    "height": 176,
+    "anchorX": 92,
+    "anchorY": 134
+  },
+  "slots": ["head", "face", "neck", "body", "hand", "back", "effect"],
+  "fallbackCharacterId": "classic_pixel",
+  "notes": "Current beta uses DOM/SVG vector layers in src/pet-visual. This folder is reserved for future professional frame assets."
+}

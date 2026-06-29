@@ -38,8 +38,8 @@ PixelPal-Windows-Beta.9.zip
 下载页已经使用固定版本 Release 链接：
 
 ```text
-https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.2/PixelPal-macOS-Beta.9.zip
-https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.2/PixelPal-Windows-Beta.9.zip
+https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.4/PixelPal-1.0.0-beta.4-macOS-Beta.zip
+https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.4/PixelPal-1.0.0-beta.4-Windows-Beta.zip
 ```
 
 只要 tag 是 `v1.0.0-beta.2`，并且 Release 附件名字完全一致，下载按钮就能用。

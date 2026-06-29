@@ -193,6 +193,17 @@ body {
   outline: none;
 }
 
+.floating-card select {
+  width: 100%;
+  height: 30px;
+  border: 1px solid #cfc7bb;
+  border-radius: 6px;
+  background: #fffdf7;
+  color: #242424;
+  padding: 0 8px;
+  outline: none;
+}
+
 .toggle-row {
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -426,4 +437,335 @@ body {
 
 .hidden-input {
   display: none;
+}
+
+.robot-pet {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: 92px 136px;
+}
+
+.robot-shadow {
+  fill: rgba(22, 42, 50, 0.16);
+  transform-origin: center;
+  animation: robotShadow 2.8s ease-in-out infinite;
+}
+
+.robot-shell,
+.robot-helmet {
+  fill: url("#robot-shell");
+  stroke: #8dbcca;
+  stroke-width: 1.8;
+}
+
+.robot-helmet {
+  filter: drop-shadow(0 3px 4px rgba(41, 94, 116, 0.18));
+}
+
+.robot-mask {
+  fill: url("#robot-mask");
+  stroke: #6ecce8;
+  stroke-width: 1.2;
+}
+
+.robot-core-drop {
+  fill: url("#robot-core");
+  opacity: 0.9;
+  transform-origin: 92px 123px;
+  animation: robotCore 2.2s ease-in-out infinite;
+}
+
+.robot-light-strip {
+  fill: none;
+  stroke: #67e4ff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.62;
+}
+
+.robot-belly-line {
+  fill: none;
+  stroke: rgba(80, 143, 158, 0.42);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.robot-status-dot {
+  fill: #ffd36b;
+  opacity: 0.8;
+}
+
+.robot-back-fin,
+.robot-sensor-wing {
+  fill: #d9f4fb;
+  stroke: #8dbcca;
+  stroke-width: 1.4;
+}
+
+.robot-arm {
+  fill: none;
+  stroke: #d7f5fb;
+  stroke-width: 10;
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 2px rgba(30, 72, 88, 0.12));
+}
+
+.robot-hand {
+  fill: #f6fdff;
+  stroke: #8dbcca;
+  stroke-width: 1.6;
+}
+
+.robot-halo {
+  fill: none;
+  stroke: #94efff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(84, 229, 255, 0.6));
+  transform-origin: 92px 20px;
+}
+
+.robot-antenna {
+  fill: #54e5ff;
+  filter: drop-shadow(0 0 4px rgba(84, 229, 255, 0.74));
+}
+
+.robot-head,
+.robot-body {
+  transform-origin: 92px 92px;
+}
+
+.robot-face {
+  stroke: #54e5ff;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  filter: drop-shadow(0 0 5px rgba(84, 229, 255, 0.85));
+}
+
+.robot-star {
+  fill: #d8fbff;
+  opacity: 0;
+}
+
+.face-eye-dot .robot-eye {
+  d: path("M78 55 L88 55 M96 55 L106 55");
+}
+
+.face-eye-closed .robot-eye,
+.face-eye-sleep .robot-eye {
+  d: path("M78 56 L88 56 M96 56 L106 56");
+}
+
+.face-eye-half .robot-eye {
+  d: path("M78 57 C82 56 86 56 90 57 M96 57 C100 56 104 56 108 57");
+}
+
+.face-eye-round .robot-eye,
+.face-eye-wide .robot-eye,
+.face-eye-bright .robot-eye {
+  d: path("M80 55 C82 51 87 51 89 55 M96 55 C99 51 104 51 106 55");
+}
+
+.face-eye-tilt .robot-eye {
+  d: path("M78 54 L89 57 M96 57 L107 54");
+}
+
+.face-eye-down .robot-eye {
+  d: path("M78 57 C82 54 86 54 90 57 M96 57 C100 54 104 54 108 57");
+}
+
+.face-eye-sharp .robot-eye,
+.face-eye-focus .robot-eye {
+  d: path("M78 53 L90 56 M96 56 L108 53");
+}
+
+.face-eye-wink .robot-eye {
+  d: path("M78 56 L89 56 M96 55 C100 51 105 51 108 55");
+}
+
+.face-eye-star .robot-eye {
+  opacity: 0;
+}
+
+.face-eye-star .robot-star {
+  opacity: 1;
+}
+
+.face-mouth-line .robot-mouth,
+.face-mouth-tiny .robot-mouth {
+  d: path("M86 66 L99 66");
+}
+
+.face-mouth-none .robot-mouth {
+  opacity: 0;
+}
+
+.face-mouth-o .robot-mouth {
+  d: path("M91 66 C91 62 96 62 96 66 C96 70 91 70 91 66");
+}
+
+.face-mouth-wave .robot-mouth {
+  d: path("M84 66 C88 63 92 69 96 66 C99 64 101 65 103 67");
+}
+
+.face-mouth-sad .robot-mouth {
+  d: path("M84 69 C89 65 96 65 101 69");
+}
+
+.face-mouth-smirk .robot-mouth {
+  d: path("M86 66 C91 70 98 68 101 64");
+}
+
+.glow-low .robot-light-strip,
+.glow-low .robot-core-drop {
+  opacity: 0.38;
+}
+
+.glow-bright .robot-light-strip,
+.glow-bright .robot-core-drop,
+.glow-pulse .robot-light-strip,
+.glow-pulse .robot-core-drop {
+  opacity: 1;
+}
+
+.glow-warm .robot-status-dot {
+  fill: #ffd36b;
+  opacity: 1;
+}
+
+.robot-quiet {
+  opacity: 0.86;
+}
+
+.robot-quiet .robot-light-strip,
+.robot-quiet .robot-core-drop,
+.robot-quiet .robot-halo {
+  opacity: 0.34;
+  animation-duration: 4.8s;
+}
+
+.robot-accessory {
+  stroke: #77736c;
+  stroke-width: 1.2;
+}
+
+.sleep-cap {
+  fill: #d8f5ff;
+}
+
+.bowtie {
+  fill: #c8a86a;
+}
+
+.top-star {
+  fill: #ffe28a;
+  filter: drop-shadow(0 0 4px rgba(255, 211, 107, 0.65));
+}
+
+.robot-sleep-visor {
+  fill: rgba(210, 247, 255, 0.34);
+  stroke: rgba(84, 229, 255, 0.5);
+  stroke-width: 2;
+}
+
+.robot-action-idle,
+.robot-action-float,
+.robot-action-quiet {
+  animation: robotFloat 3s ease-in-out infinite;
+}
+
+.robot-action-look .robot-head,
+.robot-action-observe .robot-head {
+  animation: robotLook 4.2s ease-in-out infinite;
+}
+
+.robot-action-wave .robot-arm.right,
+.robot-action-drink .robot-arm.right,
+.robot-action-rest .robot-arm.right {
+  animation: robotWave 1.35s ease-in-out infinite;
+  transform-origin: 132px 104px;
+}
+
+.robot-action-click {
+  animation: robotClick 0.55s ease-out;
+}
+
+.robot-action-celebrate .robot-body,
+.robot-action-celebrate .robot-head {
+  animation: robotCelebrate 0.9s ease-in-out infinite;
+}
+
+.robot-action-sleep {
+  animation: robotSleep 4s ease-in-out infinite;
+}
+
+.robot-action-scared {
+  animation: robotScared 0.8s ease-in-out infinite;
+}
+
+.robot-action-follow .robot-head,
+.robot-action-play .robot-head {
+  animation: robotFollow 1.8s ease-in-out infinite;
+}
+
+.robot-action-pillow .robot-hand.left,
+.robot-action-pillow .robot-hand.right {
+  fill: #d8f5ff;
+}
+
+@keyframes robotFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes robotShadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.16; }
+  50% { transform: scaleX(0.86); opacity: 0.1; }
+}
+
+@keyframes robotCore {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.08); filter: brightness(1.18); }
+}
+
+@keyframes robotLook {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-4px); }
+  70% { transform: translateX(4px); }
+}
+
+@keyframes robotWave {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-18deg); }
+}
+
+@keyframes robotClick {
+  0% { transform: scale(1); }
+  45% { transform: scale(0.96, 1.04); }
+  100% { transform: scale(1); }
+}
+
+@keyframes robotCelebrate {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(2deg); }
+}
+
+@keyframes robotSleep {
+  0%, 100% { transform: translateY(2px); }
+  50% { transform: translateY(5px); }
+}
+
+@keyframes robotScared {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-5px); }
+}
+
+@keyframes robotFollow {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(5px) rotate(2deg); }
 }
