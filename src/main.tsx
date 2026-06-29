@@ -116,7 +116,7 @@ function App() {
   const [reminderTime, setReminderTime] = useState("18:00");
   const [position, setPosition] = useState({ x: 120, y: 120 });
   const [deepSeekReady, setDeepSeekReady] = useState(false);
-  const [appVersion, setAppVersion] = useState("1.0.0-beta.1");
+  const [appVersion, setAppVersion] = useState("1.0.0-beta.3");
   const [edgePose, setEdgePose] = useState<Edge | null>(null);
   const dragRef = useRef<{ x: number; y: number; left: number; top: number; moved: boolean } | null>(null);
 
@@ -278,6 +278,8 @@ function App() {
         bilibili: "https://www.bilibili.com",
         youtube: "https://www.youtube.com",
         github: "https://github.com",
+        下载页: "https://goatsun1229.github.io/sunmy/",
+        官网: "https://goatsun1229.github.io/sunmy/",
       };
       for (const [key, url] of Object.entries(sites)) {
         if (lower.includes(key.toLowerCase())) {
@@ -297,6 +299,8 @@ function App() {
         calendar: "calendar",
         "终端": "终端",
         terminal: "terminal",
+        powershell: "powershell",
+        "命令行": "命令行",
       };
       for (const [key, target] of Object.entries(appMap)) {
         if (lower.includes(key.toLowerCase())) {
@@ -414,6 +418,7 @@ function App() {
     const template = [
       "码伴 PixelPal 内测反馈",
       "",
+      `应用版本：${appVersion}`,
       `系统：${platform?.platform || "未识别"}`,
       `宠物名：${settings.petName}`,
       `主人名：${settings.ownerName}`,

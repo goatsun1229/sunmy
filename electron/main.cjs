@@ -17,7 +17,7 @@ const productPages = {
   privacy: "https://goatsun1229.github.io/sunmy/privacy.html",
   terms: "https://goatsun1229.github.io/sunmy/terms.html",
   feedback: "https://goatsun1229.github.io/sunmy/feedback.html",
-  release: "https://github.com/goatsun1229/sunmy/releases/latest",
+  release: "https://github.com/goatsun1229/sunmy/releases",
 };
 
 function secretPath() {
@@ -230,10 +230,14 @@ function openApp(target) {
     "计算器": "calc.exe",
     notepad: "notepad.exe",
     "记事本": "notepad.exe",
+    notes: "notepad.exe",
+    "备忘录": "notepad.exe",
     calendar: "outlookcal:",
     "日历": "outlookcal:",
     terminal: "wt.exe",
     "终端": "wt.exe",
+    powershell: "powershell.exe",
+    "命令行": "cmd.exe",
   };
 
   return new Promise((resolve) => {

@@ -2,7 +2,7 @@
 
 这是 Windows + macOS 正式跨平台版本的 Electron Beta。
 
-当前版本：1.0.0-beta.1
+当前版本：1.0.0-beta.2
 
 当前目标：
 

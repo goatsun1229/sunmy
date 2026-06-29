@@ -14,20 +14,20 @@ GitHub 网页上传普通文件有大小限制，安装包超过 25MB 时不能�
 4. `Tag version` 填：
 
 ```text
-v1.0.0-beta.1
+v1.0.0-beta.2
 ```
 
 5. `Release title` 填：
 
 ```text
-码伴 PixelPal 1.0.0 Beta 1
+码伴 PixelPal 1.0.0 Beta 2
 ```
 
 6. 把两个安装包改名为：
 
 ```text
--PixelPal-1.0.0-beta.1-macOS.zip
--PixelPal-1.0.0-beta.1-Windows.zip
+PixelPal-macOS-Beta.9.zip
+PixelPal-Windows-Beta.9.zip
 ```
 
 7. 拖到 Release 的附件区域。
@@ -38,8 +38,8 @@ v1.0.0-beta.1
 下载页已经使用固定版本 Release 链接：
 
 ```text
-https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.1/-PixelPal-1.0.0-beta.1-macOS.zip
-https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.1/-PixelPal-1.0.0-beta.1-Windows.zip
+https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.2/PixelPal-macOS-Beta.9.zip
+https://github.com/goatsun1229/sunmy/releases/download/v1.0.0-beta.2/PixelPal-Windows-Beta.9.zip
 ```
 
-只要 tag 是 `v1.0.0-beta.1`，并且 Release 附件名字完全一致，下载按钮就能用。
+只要 tag 是 `v1.0.0-beta.2`，并且 Release 附件名字完全一致，下载按钮就能用。
