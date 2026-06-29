@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { dialogueByCategory } from "./pet-system/dialogues";
+import { addActiveMinute, equipItem, eveningSummary, greetingFor, maybeRandomEvent, recordInteraction, saveSevenDayCard } from "./pet-system/engine";
+import { createDefaultCompanion, exportCompanion, importCompanion, loadCompanion, personalityDescription, saveCompanion } from "./pet-system/storage";
+import type { CompanionData } from "./pet-system/types";
 import "./styles.css";
 
 type PetState =
@@ -105,6 +109,8 @@ function App() {
   const [setupOpen, setSetupOpen] = useState(() => !loadSettings().onboardingDone);
   const [reminderOpen, setReminderOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [homeOpen, setHomeOpen] = useState(false);
+  const [homeTab, setHomeTab] = useState<"profile" | "memories" | "items" | "achievements" | "data">("profile");
   const [petState, setPetState] = useState<PetState>("coding");
   const [tick, setTick] = useState(0);
   const [bubble, setBubble] = useState("");
@@ -116,12 +122,15 @@ function App() {
   const [reminderTime, setReminderTime] = useState("18:00");
   const [position, setPosition] = useState({ x: 120, y: 120 });
   const [deepSeekReady, setDeepSeekReady] = useState(false);
-  const [appVersion, setAppVersion] = useState("1.0.0-beta.3");
+  const [appVersion, setAppVersion] = useState("1.0.0-beta.4");
   const [edgePose, setEdgePose] = useState<Edge | null>(null);
+  const [companion, setCompanion] = useState<CompanionData>(() => loadCompanion(loadSettings()));
   const dragRef = useRef<{ x: number; y: number; left: number; top: number; moved: boolean } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => saveSettings(settings), [settings]);
   useEffect(() => saveReminders(reminders), [reminders]);
+  useEffect(() => saveCompanion(companion), [companion]);
 
   useEffect(() => {
     void window.pixelpal?.loadSecret("deepseek_key").then((value) => setDeepSeekReady(Boolean(value)));
@@ -129,7 +138,27 @@ function App() {
   }, []);
 
   useEffect(() => {
+    setCompanion((data) => ({
+      ...data,
+      profile: { ...data.profile, petName: settings.petName, ownerName: settings.ownerName, currentVersion: appVersion },
+    }));
+  }, [appVersion, settings.ownerName, settings.petName]);
+
+  useEffect(() => {
     const timer = window.setInterval(() => setTick((value) => value + 1), 420);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (companion.daily.greeted) return;
+    showBubble(greetingFor(companion));
+    setCompanion((data) => ({ ...data, daily: { ...data.daily, greeted: true } }));
+  }, [companion.daily.greeted]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCompanion((data) => addActiveMinute(data));
+    }, 60000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -146,6 +175,22 @@ function App() {
   }, [settings.smartMode]);
 
   useEffect(() => {
+    const timer = window.setInterval(async () => {
+      const context = await window.pixelpal?.activeContext().catch(() => null);
+      const text = `${context?.app || ""} ${context?.title || ""}`.toLowerCase();
+      const focusMode = /zoom|teams|腾讯会议|keynote|powerpoint|游戏|game/.test(text);
+      setCompanion((data) => {
+        const result = maybeRandomEvent(data, text, focusMode);
+        if (!result) return data;
+        setPetState((current) => (result.animationKey.includes("sleep") || result.animationKey.includes("nap") ? "sleep" : current === "watching" ? "watching" : "coffee"));
+        showBubble(result.text, true);
+        return result.data;
+      });
+    }, 65000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     const timer = window.setInterval(() => {
       const now = Date.now();
       const today = new Date().toISOString().slice(0, 10);
@@ -154,15 +199,18 @@ function App() {
       const next = reminders.filter((reminder) => {
         if (reminder.type === "once" && reminder.nextFire && now >= reminder.nextFire) {
           showBubble(reminder.message);
+          setCompanion((data) => ({ ...data, stats: { ...data.stats, reminderShownCount: data.stats.reminderShownCount + 1 } }));
           return false;
         }
         if (reminder.type === "interval" && reminder.nextFire && now >= reminder.nextFire) {
           showBubble(reminder.message);
+          setCompanion((data) => ({ ...data, stats: { ...data.stats, reminderShownCount: data.stats.reminderShownCount + 1 } }));
           reminder.nextFire = now + (reminder.interval || 7200000);
           changed = true;
         }
         if (reminder.type === "daily" && reminder.time === hhmm && reminder.lastFireDay !== today) {
           showBubble(reminder.message);
+          setCompanion((data) => ({ ...data, stats: { ...data.stats, reminderShownCount: data.stats.reminderShownCount + 1 } }));
           reminder.lastFireDay = today;
           changed = true;
         }
@@ -181,6 +229,7 @@ function App() {
   function nextState() {
     const index = states.indexOf(petState);
     setPetState(states[(index + 1) % states.length]);
+    setCompanion((data) => recordInteraction(data, "pet"));
   }
 
   function px(x: number, y: number, w = 1, h = 1, color = "#111") {
@@ -286,6 +335,7 @@ function App() {
           if (window.pixelpal) await window.pixelpal.openUrl(url);
           else window.open(url, "_blank");
           setPetState("success");
+          setCompanion((data) => recordInteraction(data, "command"));
           showBubble("打开啦", true);
           return;
         }
@@ -306,6 +356,7 @@ function App() {
         if (lower.includes(key.toLowerCase())) {
           const opened = window.pixelpal ? await window.pixelpal.openApp(target) : false;
           setPetState(opened ? "success" : "error");
+          if (opened) setCompanion((data) => recordInteraction(data, "command"));
           showBubble(opened ? "打开啦" : "这个应用没打开", true);
           return;
         }
@@ -320,10 +371,11 @@ function App() {
       showBubble("我看看天气...");
       try {
         const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=zh`);
-        const json = await res.json();
-        const now = json.current_condition?.[0];
-        const desc = now?.lang_zh?.[0]?.value || now?.weatherDesc?.[0]?.value || "现在";
-        showBubble(`${desc} ${now?.temp_C || ""}℃`);
+      const json = await res.json();
+      const now = json.current_condition?.[0];
+      const desc = now?.lang_zh?.[0]?.value || now?.weatherDesc?.[0]?.value || "现在";
+      setCompanion((data) => recordInteraction(data, "command"));
+      showBubble(`${desc} ${now?.temp_C || ""}℃`);
       } catch {
         showBubble("天气没查到");
       }
@@ -369,6 +421,7 @@ function App() {
       ...reminders,
       { id: crypto.randomUUID(), type: "interval", message: "起来走走，活动一下", interval: 7200000, nextFire: Date.now() + 7200000 },
     ]);
+    setCompanion((data) => recordInteraction(data, "command"));
     showBubble("好，每2小时提醒你");
   }
 
@@ -384,6 +437,7 @@ function App() {
       },
     ]);
     setReminderOpen(false);
+    setCompanion((data) => recordInteraction(data, "command"));
     showBubble(`好，${reminderTime}提醒你`, true);
   }
 
@@ -395,6 +449,7 @@ function App() {
   function finishSetup() {
     setSettings({ ...settings, onboardingDone: true });
     setSetupOpen(false);
+    setCompanion((data) => recordInteraction(data, "pet"));
     showBubble(`${settings.ownerName}，我准备好啦`, true);
   }
 
@@ -437,7 +492,51 @@ function App() {
     const copied = await window.pixelpal?.copyText(template);
     if (!copied && navigator.clipboard) await navigator.clipboard.writeText(template);
     setPetState("success");
+    setCompanion((data) => recordInteraction(data, "command"));
     showBubble("反馈模板已复制", true);
+  }
+
+  function completeDailyTask(kind: "pet" | "memory" | "quiet") {
+    setCompanion((data) => recordInteraction(data, kind === "memory" ? "memory" : kind));
+    showBubble(companion.daily.taskCompleted ? "今天已经记下啦" : "今日小互动完成啦", true);
+  }
+
+  function exportArchive() {
+    const blob = new Blob([exportCompanion(companion)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `PixelPal-${companion.profile.petName}-archive.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importArchive(file?: File) {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      setCompanion((data) => importCompanion(text, data));
+      showBubble("存档导入成功", true);
+    } catch {
+      showBubble("存档导入失败，原数据已保留", true);
+    }
+  }
+
+  function resetProgress() {
+    if (!window.confirm("确定重置成长进度吗？这不会删除 DeepSeek Key，但会清空回忆和关系数据。")) return;
+    localStorage.removeItem("pixelpal.companion.v1");
+    const fresh = createDefaultCompanion(settings.petName, settings.ownerName);
+    setCompanion(fresh);
+    showBubble("进度已重置", true);
+  }
+
+  function setQuietMode(minutes?: number) {
+    setCompanion((data) => ({
+      ...data,
+      quietMode: { ...data.quietMode, enabled: true, until: minutes ? Date.now() + minutes * 60000 : undefined },
+    }));
+    setCompanion((data) => recordInteraction(data, "quiet"));
+    showBubble(dialogueByCategory("quiet", minutes || 0), true);
   }
 
   async function snapToEdge() {
@@ -570,10 +669,94 @@ function App() {
           </div>
         </section>
       )}
+      {homeOpen && (
+        <section data-no-drag className="home-window">
+          <header className="home-header">
+            <div>
+              <h2>宠物小屋</h2>
+              <p>{companion.profile.petName} 和 {companion.profile.ownerName} 的本地档案</p>
+            </div>
+            <button onClick={() => setHomeOpen(false)}>关闭</button>
+          </header>
+          <div className="home-tabs">
+            <button className={homeTab === "profile" ? "active" : ""} onClick={() => setHomeTab("profile")}>档案</button>
+            <button className={homeTab === "memories" ? "active" : ""} onClick={() => { setHomeTab("memories"); completeDailyTask("memory"); }}>回忆册</button>
+            <button className={homeTab === "items" ? "active" : ""} onClick={() => setHomeTab("items")}>收藏</button>
+            <button className={homeTab === "achievements" ? "active" : ""} onClick={() => setHomeTab("achievements")}>成就</button>
+            <button className={homeTab === "data" ? "active" : ""} onClick={() => setHomeTab("data")}>数据</button>
+          </div>
+          {homeTab === "profile" && (
+            <div className="home-panel">
+              <div className="profile-grid">
+                <article><span>陪伴天数</span><strong>{companion.profile.totalActiveDays}</strong></article>
+                <article><span>连续天数</span><strong>{companion.profile.consecutiveActiveDays}</strong></article>
+                <article><span>累计陪伴</span><strong>{companion.profile.totalActiveMinutes} 分钟</strong></article>
+                <article><span>关系阶段</span><strong>{companion.relationship.bond >= 60 ? "很亲近" : companion.relationship.bond >= 25 ? "慢慢熟悉" : "刚刚认识"}</strong></article>
+              </div>
+              <p className="soft-line">{personalityDescription(companion.personality)}</p>
+              <p className="soft-line">今日状态：{companion.daily.status}。今日小互动：{companion.daily.taskLabel}{companion.daily.taskCompleted ? "（已完成）" : ""}</p>
+              {eveningSummary(companion) && <p className="soft-line">{eveningSummary(companion)}</p>}
+              <div className="home-actions">
+                <button onClick={() => { completeDailyTask("pet"); setPetState("success"); }}>摸摸它</button>
+                <button onClick={() => setQuietMode(30)}>安静30分钟</button>
+                <button onClick={() => setQuietMode(60)}>安静1小时</button>
+                <button onClick={() => setCompanion((data) => ({ ...data, quietMode: { ...data.quietMode, enabled: false, until: undefined } }))}>关闭安静</button>
+              </div>
+            </div>
+          )}
+          {homeTab === "memories" && (
+            <div className="home-panel list-panel">
+              {companion.profile.consecutiveActiveDays >= 7 && <button onClick={() => saveSevenDayCard(companion)}>保存七日纪念卡</button>}
+              {companion.memories.map((memory) => (
+                <article key={memory.memoryId} className="timeline-item">
+                  <span>{new Date(memory.createdAt).toLocaleDateString()}</span>
+                  <h3>{memory.title}</h3>
+                  <p>{memory.description}</p>
+                </article>
+              ))}
+            </div>
+          )}
+          {homeTab === "items" && (
+            <div className="home-panel item-grid">
+              {companion.collectibles.map((item) => (
+                <article key={item.itemId} className={`item-card ${item.owned ? "" : "locked"}`}>
+                  <div className="item-icon">{item.itemType === "hat" ? "帽" : item.itemType === "badge" ? "章" : "物"}</div>
+                  <h3>{item.name}</h3>
+                  <p>{item.description}</p>
+                  <button disabled={!item.owned} onClick={() => setCompanion((data) => equipItem(data, item.itemId))}>{item.equipped ? "卸下" : item.owned ? "装备" : "未获得"}</button>
+                </article>
+              ))}
+            </div>
+          )}
+          {homeTab === "achievements" && (
+            <div className="home-panel list-panel">
+              {companion.achievements.filter((item) => !item.hidden || item.unlockedAt).map((achievement) => (
+                <article key={achievement.achievementId} className="timeline-item">
+                  <h3>{achievement.unlockedAt ? "已解锁 · " : ""}{achievement.title}</h3>
+                  <p>{achievement.description}</p>
+                  <div className="progress"><span style={{ width: `${Math.min(100, (achievement.progress / achievement.target) * 100)}%` }} /></div>
+                </article>
+              ))}
+            </div>
+          )}
+          {homeTab === "data" && (
+            <div className="home-panel">
+              <p className="soft-line">所有成长数据默认保存在本机浏览器存储中，不上传服务器。DeepSeek Key 使用 Electron 安全存储单独保存。</p>
+              <div className="home-actions">
+                <button onClick={exportArchive}>导出存档</button>
+                <button onClick={() => fileInputRef.current?.click()}>导入存档</button>
+                <button onClick={resetProgress}>重置进度</button>
+              </div>
+              <input ref={fileInputRef} className="hidden-input" type="file" accept="application/json" onChange={(event) => void importArchive(event.target.files?.[0])} />
+            </div>
+          )}
+        </section>
+      )}
       <nav data-no-drag className="panel">
         <button onClick={() => setPetState("coding")}>工作</button>
         <button onClick={() => setPetState("watching")}>看视频</button>
         <button onClick={() => setReminderOpen(!reminderOpen)}>提醒</button>
+        <button onClick={() => setHomeOpen(!homeOpen)}>小屋</button>
         <button onClick={() => setSetupOpen(!setupOpen)}>设置</button>
         <button onClick={() => void setDeepSeekKey()}>{deepSeekReady ? "更新Key" : "设置Key"}</button>
         <button onClick={() => void copyFeedbackTemplate()}>反馈</button>

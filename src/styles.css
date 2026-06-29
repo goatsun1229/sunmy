@@ -272,3 +272,158 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.home-window {
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  z-index: 10;
+  width: min(560px, calc(100vw - 36px));
+  max-height: calc(100vh - 110px);
+  overflow: hidden;
+  border: 1px solid #cfc7bb;
+  border-radius: 8px;
+  background: rgba(255, 250, 240, 0.96);
+  box-shadow: 0 18px 44px rgba(36, 36, 36, 0.16);
+  -webkit-app-region: no-drag;
+}
+
+.home-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid #e5ded2;
+}
+
+.home-header h2,
+.timeline-item h3,
+.item-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.home-header p,
+.soft-line,
+.timeline-item p,
+.item-card p {
+  margin: 4px 0 0;
+  color: #4c4c4e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.home-header button,
+.home-tabs button,
+.home-actions button,
+.list-panel > button,
+.item-card button {
+  min-height: 30px;
+  border: 1px solid #cfc7bb;
+  border-radius: 6px;
+  background: #fffdf7;
+  cursor: pointer;
+}
+
+.home-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5ded2;
+  overflow-x: auto;
+}
+
+.home-tabs button {
+  flex: 0 0 auto;
+  padding: 0 10px;
+}
+
+.home-tabs .active {
+  background: #2a2a2b;
+  color: #fffaf0;
+}
+
+.home-panel {
+  max-height: calc(100vh - 230px);
+  overflow: auto;
+  padding: 14px;
+}
+
+.profile-grid,
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profile-grid article,
+.timeline-item,
+.item-card {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #e5ded2;
+  border-radius: 8px;
+  background: #fffdf7;
+}
+
+.profile-grid span {
+  display: block;
+  color: #77736c;
+  font-size: 11px;
+}
+
+.profile-grid strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.list-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.timeline-item span {
+  color: #77736c;
+  font-size: 11px;
+}
+
+.item-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+  border: 1px solid #cfc7bb;
+  background: #f8f1e5;
+  font-weight: 800;
+}
+
+.item-card.locked {
+  opacity: 0.58;
+}
+
+.progress {
+  height: 7px;
+  margin-top: 8px;
+  border: 1px solid #ddd6ca;
+  background: #f4f0e8;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: #c8a86a;
+}
+
+.hidden-input {
+  display: none;
+}
